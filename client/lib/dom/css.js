@@ -1,6 +1,36 @@
-function addClass(node, text) {
-  if (isString(node)) node = getNode(node);
-  node.classList.add(text);
+/* -------------------------------------------- */
+/*                     class                    */
+/* -------------------------------------------- */
+
+function addClass(node, ...className) {
+  if (typeof node === 'string') node = document.querySelector(node);
+
+  className.forEach((c) => {
+    // c가 오브젝트 일시에
+    if (isObject(c)) c = Object.values(c);
+    // c 문자열에 쉽표가 있을때
+    if (c.includes(',')) {
+      c = c.split(',');
+      // c = c.replace(/\s*/g, '').split(','); // 공백이 포함되었을때
+    }
+    if (isArray(c)) {
+      c.forEach((c) => node.classList.add(c));
+    } else if (isString(c)) {
+      node.classList.add(c);
+    } else {
+      throw new TypeError('addClass 함수의 인수는 문자 타입 이어야 합니다.');
+    }
+  });
+
+  /* if (isArray(className)) {
+    className.forEach((c) => node.classList.add(c));
+    return;
+  }
+
+  if (typeof className !== 'string') {
+    throw new TypeError('addClass 함수의 두 번째 인수는 문자 타입 이어야 합니다.');
+  }
+  node.classList.add(className); */
 }
 
 function removeClass(node, className) {
@@ -28,7 +58,9 @@ function toggleClass(node, className) {
   return node.classList.toggle(className);
 }
 
-/* ---------------------------------- style --------------------------------- */
+/* -------------------------------------------- */
+/*                     style                    */
+/* -------------------------------------------- */
 
 function getStyle(node, prop) {
   if (isString(node)) node = getNode(node);

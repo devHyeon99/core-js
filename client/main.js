@@ -1,54 +1,74 @@
-import { attr, getNode, clearContents, insertLast } from './lib/index.js';
-console.log(attr);
+import data from './data/data.js';
+import {
+  shake,
+  getNode,
+  addClass,
+  showAlert,
+  getRandom,
+  insertLast,
+  removeClass,
+  clearContents,
+  isNumericString,
+  copy,
+} from './lib/index.js';
 
-function phase1() {
-  const first = getNode('#firstNumber');
-  const second = getNode('#secondNumber');
-  const clear = getNode('#clear');
-  const result = getNode('.result');
-  function handleInput() {
-    const firstValue = +first.value;
-    const secondeValue = +second.value;
-    const total = `${firstValue + secondeValue}`;
+// [phase-1]
+// 1. 주접 떨기 버튼을 클릭 하는 함수
+//    - 주접 떨기 버튼 가져오기
+//    - 이벤트 연결하기 addEventListener('click')
 
-    clearContents(result);
-    insertLast(result, total);
+// 2. input 값 가져오기
+//    - input.value
+
+// 3. data함수에서 주접 1개 꺼내기
+//    - data(name)
+//    - getRandom()
+
+// 4. pick 항목 랜더링하기
+
+// [phase-2]
+// 1. 아무 값도 입력 받지 못했을 때 예외처리 (콘솔 출력)
+
+const submit = getNode('#submit');
+const nameField = getNode('#nameField');
+const result = getNode('.result');
+
+function handleSubmit(e) {
+  e.preventDefault();
+
+  const name = nameField.value;
+  const list = data(name);
+  const pick = list[getRandom(list.length)];
+
+  if (!name || name.replace(/\s*/g, '') === '') {
+    showAlert('.alert-error', '공백은 허용하지 않습니다.');
+
+    shake('#nameField').restart();
+
+    return;
   }
 
-  function handleClear(e) {
-    e.preventDefault();
+  if (!isNumericString(name)) {
+    showAlert('.alert-error', '제대로된 이름을 입력해 주세요.');
 
-    clearContents(first);
-    clearContents(second);
-    clearContents(result);
+    shake('#nameField').restart();
+
+    return;
   }
-  first.addEventListener('input', handleInput);
-  second.addEventListener('input', handleInput);
-  clear.addEventListener('click', handleClear);
+
+  clearContents(result);
+  insertLast(result, pick);
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                   이벤트 위임                                   */
-/* -------------------------------------------------------------------------- */
-function phase2() {
-  const calculator = getNode('.calculator');
-  const result = getNode('.result');
-  const clear = getNode('#clear');
-  const numberInputs = [...document.querySelectorAll('input:not(#clear)')];
+function handleCopy() {
+  const text = result.textContent;
 
-  calculator.addEventListener('input', handleInput);
-  clear.addEventListener('click', handleClear);
-
-  function handleInput() {
-    const total = numberInputs.reduce((acc, cur) => acc + Number(cur.value), 0);
-
-    clearContents(result);
-    insertLast(result, total);
-  }
-
-  function handleClear(e) {
-    e.preventDefault();
-    numberInputs.forEach(clearContents);
-    result.textContent = '-';
+  if (nameField.value) {
+    copy(text).then(() => {
+      showAlert('.alert-success', '클립보드 복사 완료!');
+    });
   }
 }
+
+submit.addEventListener('click', handleSubmit);
+result.addEventListener('click', handleCopy);

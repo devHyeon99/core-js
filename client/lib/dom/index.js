@@ -10,3 +10,4 @@ export * from './insert.js';
 export * from './css.js';
 export * from './bindevent.js';
 export * from './showAlert.js';
+export * from './endScroll.js';

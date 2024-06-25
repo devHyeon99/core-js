@@ -1,74 +1,71 @@
-import data from './data/data.js';
 import {
-  shake,
+  diceAnimation,
+  getNodes,
   getNode,
-  addClass,
-  showAlert,
-  getRandom,
+  attr,
   insertLast,
-  removeClass,
+  endScroll,
   clearContents,
-  isNumericString,
-  copy,
 } from './lib/index.js';
 
-// [phase-1]
-// 1. 주접 떨기 버튼을 클릭 하는 함수
-//    - 주접 떨기 버튼 가져오기
-//    - 이벤트 연결하기 addEventListener('click')
+const [rollingButton, recordButton, resetButton] = getNodes('.buttonGroup > button');
+const recordListWrapper = getNode('.recordListWrapper');
 
-// 2. input 값 가져오기
-//    - input.value
+let count = 0;
+let total = 0;
 
-// 3. data함수에서 주접 1개 꺼내기
-//    - data(name)
-//    - getRandom()
+function createItem(value) {
+  const template = /* html */ `
+  <tr>
+    <td>${++count}</td>
+    <td>${value}</td>
+    <td>${(total += value)}</td>
+  </tr>
+  `;
 
-// 4. pick 항목 랜더링하기
-
-// [phase-2]
-// 1. 아무 값도 입력 받지 못했을 때 예외처리 (콘솔 출력)
-
-const submit = getNode('#submit');
-const nameField = getNode('#nameField');
-const result = getNode('.result');
-
-function handleSubmit(e) {
-  e.preventDefault();
-
-  const name = nameField.value;
-  const list = data(name);
-  const pick = list[getRandom(list.length)];
-
-  if (!name || name.replace(/\s*/g, '') === '') {
-    showAlert('.alert-error', '공백은 허용하지 않습니다.');
-
-    shake('#nameField').restart();
-
-    return;
-  }
-
-  if (!isNumericString(name)) {
-    showAlert('.alert-error', '제대로된 이름을 입력해 주세요.');
-
-    shake('#nameField').restart();
-
-    return;
-  }
-
-  clearContents(result);
-  insertLast(result, pick);
+  return template;
 }
 
-function handleCopy() {
-  const text = result.textContent;
+function renderRecordItem() {
+  const diceValue = Number(attr(getNode('#cube'), 'dice'));
+  const template = createItem(diceValue);
 
-  if (nameField.value) {
-    copy(text).then(() => {
-      showAlert('.alert-success', '클립보드 복사 완료!');
-    });
-  }
+  insertLast('.recordList tbody', template);
+  endScroll(recordListWrapper);
 }
 
-submit.addEventListener('click', handleSubmit);
-result.addEventListener('click', handleCopy);
+const handleRollingDice = (() => {
+  let isClicked = false;
+  let stopAnimation;
+
+  return () => {
+    if (!isClicked) {
+      stopAnimation = setInterval(diceAnimation, 100);
+      recordButton.disabled = true;
+      resetButton.disabled = true;
+    } else {
+      clearInterval(stopAnimation);
+      recordButton.disabled = false;
+      resetButton.disabled = false;
+    }
+
+    isClicked = !isClicked;
+  };
+})();
+
+function handleRecord() {
+  recordListWrapper.hidden = false;
+
+  renderRecordItem();
+}
+
+function handleReset() {
+  recordListWrapper.hidden = true;
+  count = 0;
+  total = 0;
+  clearContents('tbody');
+}
+
+rollingButton.addEventListener('click', handleRollingDice);
+recordButton.addEventListener('click', handleRecord);
+resetButton.addEventListener('click', handleReset);

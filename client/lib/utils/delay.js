@@ -15,7 +15,7 @@ const defaultOptions = {
   timeout: 1000,
 };
 
-function delayP(options) {
+export function delayP(options) {
   let config = { ...defaultOptions };
 
   if (isNumber(options)) {
@@ -32,7 +32,6 @@ function delayP(options) {
     setTimeout(() => {
       if (!shouldRejected) {
         resolve(data);
-        console.log(data);
       } else {
         reject({ message: errorMessage });
       }
@@ -63,4 +62,4 @@ async function getData() {
   );
 }
 
-getData();
+// getData();
